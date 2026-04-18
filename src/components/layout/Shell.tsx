@@ -3,12 +3,16 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { ChatLauncher } from '@/components/chat/ChatLauncher';
 import { ChatPanel } from '@/components/chat/ChatPanel';
+import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useAuthStore } from '@/store/authStore';
+import { useUIStore } from '@/store/uiStore';
 import { useMockRealtime } from '@/features/chat/mockRealtime';
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const isLoaded = useAuthStore((s) => s.isLoaded);
   const initialize = useAuthStore((s) => s.initialize);
+  const settingsOpen = useUIStore((s) => s.settingsOpen);
+  const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
 
   useEffect(() => {
     if (!isLoaded) initialize();
@@ -25,6 +29,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </div>
       <ChatPanel />
       <ChatLauncher />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }

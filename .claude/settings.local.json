@@ -16,7 +16,8 @@
       "mcp__plugin_figma_figma__get_design_context",
       "Bash(npx tsc *)",
       "Bash(npx msw *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(npx eslint *)"
     ]
   }
 }

@@ -44,6 +44,12 @@ export const handlers = [
     return HttpResponse.json(nearbyUsers);
   }),
 
+  http.get('/api/users/:id', ({ params }) => {
+    const user = USERS_BY_ID[params.id as string];
+    if (!user) return new HttpResponse(null, { status: 404 });
+    return HttpResponse.json(user);
+  }),
+
   http.get('/api/posts/feed', () => {
     return HttpResponse.json(enrichPosts(POSTS.slice(0, 20)));
   }),

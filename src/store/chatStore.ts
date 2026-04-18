@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { type Conversation, type ChatMessage } from '@/types';
 import { getConversations, getChatMessages, sendMessage as apiSendMessage } from '@/lib/api/chat';
+import { toast } from '@/components/ui/toast';
 
 interface ChatState {
   conversations: Conversation[];
@@ -29,7 +30,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const conversations = await getConversations();
       set({ conversations, loadingConversations: false });
     } catch (err) {
-      set({ error: (err as Error).message, loadingConversations: false });
+      const message = (err as Error).message;
+      set({ error: message, loadingConversations: false });
+      toast.error({ title: 'Could not load conversations', description: message });
     }
   },
 
@@ -42,21 +45,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
         loadingMessages: false,
       }));
     } catch (err) {
-      set({ error: (err as Error).message, loadingMessages: false });
+      const message = (err as Error).message;
+      set({ error: message, loadingMessages: false });
+      toast.error({ title: 'Could not load messages', description: message });
     }
   },
 
   sendMessage: async (conversationId, body) => {
-    const message = await apiSendMessage(conversationId, body);
-    set((s) => {
-      const existing = s.messagesByConversation[conversationId] ?? [];
-      return {
-        messagesByConversation: {
-          ...s.messagesByConversation,
-          [conversationId]: [...existing, message],
-        },
-      };
-    });
+    try {
+      const message = await apiSendMessage(conversationId, body);
+      set((s) => {
+        const existing = s.messagesByConversation[conversationId] ?? [];
+        return {
+          messagesByConversation: {
+            ...s.messagesByConversation,
+            [conversationId]: [...existing, message],
+          },
+        };
+      });
+    } catch (err) {
+      const message = (err as Error).message;
+      set({ error: message });
+      toast.error({ title: 'Could not send message', description: message });
+    }
   },
 
   setActiveConversation: (id) => {

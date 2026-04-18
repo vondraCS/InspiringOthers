@@ -17,3 +17,9 @@ export async function getCurrentUser(): Promise<User> {
   if (!res.ok) throw new Error('Failed to fetch current user');
   return res.json();
 }
+
+export async function getUser(id: string): Promise<User> {
+  const res = await fetch(`/api/users/${id}`);
+  if (!res.ok) throw new Error('Failed to fetch user');
+  return res.json();
+}

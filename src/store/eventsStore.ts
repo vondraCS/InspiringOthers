@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { type LocalEvent } from '@/types';
 import { getLocalEvents } from '@/lib/api/events';
+import { toast } from '@/components/ui/toast';
 
 interface EventsState {
   localEvents: LocalEvent[];
@@ -20,7 +21,9 @@ export const useEventsStore = create<EventsState>((set) => ({
       const events = await getLocalEvents();
       set({ localEvents: events, loadingLocal: false });
     } catch (err) {
-      set({ error: (err as Error).message, loadingLocal: false });
+      const message = (err as Error).message;
+      set({ error: message, loadingLocal: false });
+      toast.error({ title: 'Could not load local events', description: message });
     }
   },
 }));

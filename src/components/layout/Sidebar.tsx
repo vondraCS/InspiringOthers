@@ -7,6 +7,7 @@ import { useUIStore } from '@/store/uiStore';
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const setSettingsOpen = useUIStore((s) => s.setSettingsOpen);
 
   return (
     <aside
@@ -38,6 +39,10 @@ export function Sidebar() {
 
       <div className="border-t border-[rgba(2,62,72,0.79)] py-2.5 flex flex-col gap-2 shrink-0">
         <button
+          type="button"
+          aria-label="Settings"
+          title={collapsed ? 'Settings' : undefined}
+          onClick={() => setSettingsOpen(true)}
           className={cn(
             'flex items-center gap-1 h-[45px] rounded-[15px] hover:bg-black/10 transition-colors cursor-pointer',
             collapsed ? 'justify-center px-0' : 'px-2',

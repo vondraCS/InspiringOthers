@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { type PostWithAuthor } from '@/types';
 import { getFeaturedPosts, getRecommendedPosts, getForYouPosts, getPost } from '@/lib/api/posts';
+import { toast } from '@/components/ui/toast';
 
 interface FeedState {
   featured: PostWithAuthor[];
@@ -46,7 +47,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         loadingFeatured: false,
       }));
     } catch (err) {
-      set({ errorFeatured: (err as Error).message, loadingFeatured: false });
+      const message = (err as Error).message;
+      set({ errorFeatured: message, loadingFeatured: false });
+      toast.error({ title: 'Could not load featured posts', description: message });
     }
   },
 
@@ -61,7 +64,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         loadingRecommended: false,
       }));
     } catch (err) {
-      set({ errorRecommended: (err as Error).message, loadingRecommended: false });
+      const message = (err as Error).message;
+      set({ errorRecommended: message, loadingRecommended: false });
+      toast.error({ title: 'Could not load recommended posts', description: message });
     }
   },
 
@@ -76,7 +81,9 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         loadingForYou: false,
       }));
     } catch (err) {
-      set({ errorForYou: (err as Error).message, loadingForYou: false });
+      const message = (err as Error).message;
+      set({ errorForYou: message, loadingForYou: false });
+      toast.error({ title: 'Could not load posts for you', description: message });
     }
   },
 
@@ -93,10 +100,12 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         loadingPostById: { ...s.loadingPostById, [id]: false },
       }));
     } catch (err) {
+      const message = (err as Error).message;
       set((s) => ({
         loadingPostById: { ...s.loadingPostById, [id]: false },
-        errorPostById: { ...s.errorPostById, [id]: (err as Error).message },
+        errorPostById: { ...s.errorPostById, [id]: message },
       }));
+      toast.error({ title: 'Could not load post', description: message });
     }
   },
 }));

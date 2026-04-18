@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { type User, SkillLevel } from '@/types';
 import { getRecommendedUsers, getNearbyUsers } from '@/lib/api/users';
 import { useAuthStore } from './authStore';
+import { toast } from '@/components/ui/toast';
 
 interface MatchmakingFilters {
   skillLevels: SkillLevel[];
@@ -72,7 +73,9 @@ export const useMatchmakingStore = create<MatchmakingState>((set, get) => ({
       const users = await getRecommendedUsers();
       set({ recommendedUsers: users, loadingRecommended: false });
     } catch (err) {
-      set({ error: (err as Error).message, loadingRecommended: false });
+      const message = (err as Error).message;
+      set({ error: message, loadingRecommended: false });
+      toast.error({ title: 'Could not load recommended peers', description: message });
     }
   },
 
@@ -82,7 +85,9 @@ export const useMatchmakingStore = create<MatchmakingState>((set, get) => ({
       const users = await getNearbyUsers();
       set({ nearbyUsers: users, loadingNearby: false });
     } catch (err) {
-      set({ error: (err as Error).message, loadingNearby: false });
+      const message = (err as Error).message;
+      set({ error: message, loadingNearby: false });
+      toast.error({ title: 'Could not load nearby peers', description: message });
     }
   },
 
