@@ -3,7 +3,20 @@
     "allow": [
       "Bash(npm create *)",
       "Bash(npm install *)",
-      "Bash(npx shadcn@latest init -d)"
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(rm -f src/assets/hero.png src/assets/react.svg src/assets/vite.svg)",
+      "Bash(rmdir src/assets)",
+      "Bash(npm run *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "WebSearch",
+      "WebFetch(domain:help.figma.com)",
+      "WebFetch(domain:developers.figma.com)",
+      "mcp__plugin_figma_figma__get_metadata",
+      "mcp__plugin_figma_figma__get_screenshot",
+      "mcp__plugin_figma_figma__get_design_context",
+      "Bash(npx tsc *)",
+      "Bash(npx msw *)",
+      "Bash(git stash *)"
     ]
   }
 }

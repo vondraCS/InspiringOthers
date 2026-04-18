@@ -123,6 +123,18 @@ In `/src/types/index.ts`, define core entities:
 ### 2.3 Set Up Path Aliases
 - Confirm `@/components`, `@/lib`, `@/store`, `@/types`, `@/mocks` all resolve
 
+### 2.4 Figma-Derived Component Scaffolding *(completed ahead of schedule)*
+The following production-quality components were built from the Figma design during Phase 2 and serve as the visual reference point for all future work:
+- `Logo` — brand mark SVG + Raleway wordmark, `size` (`sm`/`lg`) and `color` (`green`/`black`) props
+- `Navbar` — top bar with large centered logo
+- `Sidebar` — green left rail with `NavLink` items, hamburger button, Settings button, small logo footer
+- `Shell` — layout wrapper (Sidebar + Navbar + scrollable `<main>`)
+- `PostCard` — featured post: title, 4:3 image, author byline, body excerpt, "Read More"
+- `CardPost` — compact post: square image, centered author, title, short excerpt
+- `Home` page — "Featured Posts" (3-column `PostCard` grid) + "Recommended Posts" (4 `CardPost`s + "See More →")
+
+These use hardcoded placeholder data until Phase 3 wires up the mock API.
+
 **Exit criteria:** Folder structure exists, types are defined, imports using `@/` work.
 
 ---
@@ -145,8 +157,10 @@ In `/src/types/index.ts`, define core entities:
 - Create `/src/mocks/handlers.ts` defining handlers for:
   - `GET /api/users/recommended`
   - `GET /api/users/nearby`
-  - `GET /api/posts/feed`
-  - `GET /api/posts/for-you`
+  - `GET /api/posts/feed` — featured posts shown on Home
+  - `GET /api/posts/recommended` — compact posts shown in the Recommended row on Home
+  - `GET /api/posts/for-you` — personalised posts shown on the For You page
+  - `GET /api/posts/:id` — single post detail (needed by the post detail page)
   - `GET /api/conversations`
   - `GET /api/conversations/:id/messages`
   - `POST /api/conversations/:id/messages`
@@ -176,14 +190,24 @@ export async function sendMessage(conversationId: string, body: string): Promise
 
 **Hard rule:** Components NEVER import from `/mocks` directly. They go through `/lib/api/*` only.
 
+### 3.3b Add API function for post detail
+
+```ts
+// src/lib/api/posts.ts
+export async function getFeaturedPosts(): Promise<Post[]>
+export async function getRecommendedPosts(): Promise<Post[]>
+export async function getPost(id: string): Promise<Post>
+```
+
 ### 3.4 Build Zustand Stores
 
 Create one store per concern:
 - `authStore` — current user, login state
 - `userStore` — cached user lookups
-- `feedStore` — posts, loading state
+- `feedStore` — posts, loading state; tracks `featured` and `recommended` lists separately
 - `chatStore` — conversations, active conversation, messages
 - `matchmakingStore` — recommended users, filters
+- `uiStore` — cross-cutting UI state: sidebar collapsed, chat panel open (avoids prop-drilling into Shell)
 
 Each store should expose actions that call the API layer (not mock data directly).
 
@@ -196,23 +220,37 @@ Each store should expose actions that call the API layer (not mock data directly
 **Goal:** Navigation works between pages. Visuals can be ugly.
 
 ### 4.1 Set Up React Router
-- Configure `BrowserRouter` in `main.tsx`
-- Define routes in `App.tsx`:
+- Configure `BrowserRouter` in `App.tsx` (wraps `Shell` and all routes)
+- Define routes:
   - `/` → Home
   - `/for-you` → ForYou
   - `/around-you` → AroundYou
+  - `/posts/:id` → PostDetail *(see 5.4)*
+  - `/users/:id` → UserProfile *(see 8.6)*
   - `*` → NotFound
 
 ### 4.2 Build the App Shell
-- Create `/components/layout/Shell.tsx` — wraps all pages
-- Add a basic Navbar with text links (no logo, no fancy styling — just `<a>` tags styled with Tailwind defaults)
-- Reserve space in the bottom-right for InspireChat (placeholder div)
+- `Shell.tsx` — Sidebar on the left, Navbar + scrollable `<main>` on the right
+- `Navbar.tsx` — top bar with the large centered Logo
+- Reserve the bottom-right corner of `Shell` for the InspireChat launcher (placeholder `div` for now)
 
 ### 4.3 Create Page Stubs
 - Each page renders `<h1>Page Name</h1>` and nothing else
-- Verify navigation between all pages works
+- Verify `NavLink` active-state highlighting works on all three nav items
 
-**Exit criteria:** You can click between Home, For You, and Around You. Pages are intentionally ugly.
+### 4.4 Collapsible Sidebar
+- The `Menu` (hamburger) button in the Sidebar header toggles between **expanded** (288px, labels visible) and **collapsed** (72px, icons only) modes
+- Collapsed state: nav labels and the footer Logo are hidden; only icons remain
+- Collapse state lives in `uiStore` (`sidebarCollapsed: boolean`) so any component can read it
+- Persist `sidebarCollapsed` to `localStorage` so the preference survives a page refresh
+- Width change uses a CSS `transition-all duration-200` for a smooth snap — Framer Motion animation is added in Phase 10
+- `Shell` reads `uiStore.sidebarCollapsed` and applies the correct width class to the `<aside>`
+
+### 4.5 InspireChat Launcher Placeholder
+- Fixed `div` in the bottom-right of the viewport with a placeholder label "Chat"
+- Wired to `uiStore.chatOpen` even before the panel exists, so the toggle is testable
+
+**Exit criteria:** You can click between Home, For You, and Around You. Sidebar collapses to icons and re-expands. Active nav item is highlighted.
 
 ---
 
@@ -221,21 +259,44 @@ Each store should expose actions that call the API layer (not mock data directly
 **Goal:** Posts render on Home and For You pages from the mock API. No styling polish.
 
 ### 5.1 Build Post Components
-- `PostCard` — displays title, author name, body preview, timestamp
-- `PostList` — maps over posts and renders cards
-- Use shadcn `Card` component as the container (it gives baseline structure for free)
+Two card variants exist (built from Figma in Phase 2); wire them to real data here:
+- `PostCard` — featured card: title, 4:3 image, author byline, body excerpt, "Read More" link
+- `CardPost` — compact card: square image, centered author, title, short excerpt
+- `SectionHeader` — reusable section heading row: title on the left, optional "See More →" link on the right; used by Featured Posts, Recommended Posts, and any future section that follows this pattern
 
 ### 5.2 Wire Up the Feed
-- Home page calls `feedStore.loadFeed()` on mount → renders `PostList`
-- For You page calls `feedStore.loadForYou()` on mount → renders `PostList`
-- Show a basic "Loading..." text while fetching
-- Show "No posts yet" empty state
+- Home page calls `feedStore.loadFeatured()` on mount → renders 3-column `PostCard` grid
+- Home page calls `feedStore.loadRecommended()` on mount → renders horizontal `CardPost` row
+- For You page calls `feedStore.loadForYou()` on mount → renders its own post list
+- Show "Loading..." text while fetching; show "No posts yet" empty state
 
 ### 5.3 No Infinite Scroll
 - Per the product principles, do NOT implement infinite scroll
-- Show a finite list (e.g., 20 posts) with a "Load more" button if needed
+- Show a finite list (20 posts) with a "Load More" button at the bottom if the list exceeds that count
 
-**Exit criteria:** Real (mock) posts appear on Home and For You. Clicking around works. Looks plain — that's correct.
+### 5.4 Post Detail Page
+- Add route `/posts/:id` → `PostDetail.tsx`
+- Displays full article: title, cover image (full width), author byline, full body text, tag list
+- Fetches via `feedStore.loadPost(id)` which calls `getPost(id)` from the API layer
+- Back-navigation returns to wherever the user came from (`useNavigate(-1)` or a back link)
+
+### 5.5 Wire "Read More" and Card Clicks
+- Wrap each `PostCard` title and image in a `<Link to="/posts/:id">` — the whole card area navigates, not just the inline button
+- `CardPost` title and image link the same way
+- The inline "Read More" text in `PostCard` body becomes a styled `<Link>` rather than a `<button>`
+- Author byline ("By [name]") on both card types links to `/users/:authorId` *(profile stub added in 8.6)*
+
+### 5.6 Wire "See More" Navigation
+- "See More →" on the Recommended Posts row links to `/for-you`
+- `SectionHeader` accepts an optional `seeMoreHref` prop so every section declares its own destination
+- Future sections (user recommendations on For You, nearby peers on Around You) use the same pattern
+
+### 5.7 Post Tags
+- `PostCard` displays tags as small text labels below the body excerpt
+- `PostDetail` shows the full tag list prominently
+- Tags are display-only for now; filtering by tag is a Phase 7 concern
+
+**Exit criteria:** Real (mock) posts appear on Home and For You. Clicking a card navigates to the post detail page. "Read More", card links, and "See More" all route correctly.
 
 ---
 
@@ -277,16 +338,23 @@ Each store should expose actions that call the API layer (not mock data directly
 - `MatchmakingFilters` — checkboxes/selects for skill level, interests, location toggle
 
 ### 7.2 Wire Up the For You Page
-- Section: "People you might connect with" → renders `UserList` from `getRecommendedUsers()`
-- Section: "Posts for you" → already done in Phase 5
+The For You page follows the same section-header pattern as Home:
+- Section: "People you might connect with" — `SectionHeader` with "See More →" + horizontal `UserCard` row from `getRecommendedUsers()`
+- Section: "Posts for you" — `SectionHeader` + `PostCard` grid from `getForYouPosts()` (wired in Phase 5)
 
 ### 7.3 Wire Up the Around You Page
-- Section: "Nearby peers" → `getNearbyUsers()`
-- Section: "Local events" → use a mock event list (no map view yet — just a text list)
+- Section: "Nearby peers" — `SectionHeader` + `UserCard` row from `getNearbyUsers()`
+- Section: "Local events" — `SectionHeader` + plain event list (title, date, location text — no map view yet)
 
 ### 7.4 Filters
+- `MatchmakingFilters` component: skill level checkboxes, interest multi-select, "Near me" toggle
 - Filter state lives in `matchmakingStore`
-- Changing filters triggers a refetch (or filters client-side from the cached list — either is fine for a prototype)
+- Changing filters re-fetches or filters client-side from the cached list — either is fine for a prototype
+- Filters appear above the relevant section on each page, not in the sidebar
+
+### 7.5 "See More" for User Recommendations
+- "See More →" on the "People you might connect with" row links to a full `/people` listing page (stub is acceptable — just a `<h1>` placeholder for now)
+- This follows the same `SectionHeader` + `seeMoreHref` pattern from Phase 5
 
 **Exit criteria:** Both pages show user cards. Filters change what's displayed. Still ugly.
 
@@ -315,7 +383,19 @@ Each store should expose actions that call the API layer (not mock data directly
 - Wrap the app in a basic React error boundary
 - Add try/catch to API calls in stores; surface errors via a `toast` from shadcn
 
-**Exit criteria:** App is end-to-end usable. A new visitor lands → onboards → sees a feed → finds peers → opens chat → sends a message. Everything works. Nothing looks designed yet.
+### 8.5 Settings Dialog
+- Settings button in the Sidebar footer opens a shadcn `Dialog`
+- Contains placeholder sections: Account (display name, avatar), Interests, Skill Level
+- Reads current user from `authStore`; writes changes back to `userStore`
+- No real persistence — state resets on refresh (real persistence is a future-phase concern)
+
+### 8.6 User Profile Stub
+- Add route `/users/:id` → `UserProfile.tsx`
+- Displays the user's name, avatar placeholder, skill level, interests, and goals from mock data
+- Author bylines on `PostCard` and `CardPost` link here (wired in Phase 5.5)
+- No edit functionality yet — read-only view of mock data
+
+**Exit criteria:** App is end-to-end usable. A new visitor lands → onboards → sees a feed → clicks a post → reads the full article → finds peers → opens chat → sends a message → opens Settings. Everything works. Nothing looks designed yet.
 
 ---
 
@@ -334,20 +414,31 @@ Each store should expose actions that call the API layer (not mock data directly
 - Document variants in a `/components/ui/README.md` if helpful
 
 ### 9.3 Layout Polish
-- Real navbar with logo, navigation, profile menu
-- Sidebar (if the design calls for one) — likely a left rail with nav items and an "Around You" map snippet
-- Responsive breakpoints — mobile first, then tablet, then desktop
+- Shell layout already matches Figma (Sidebar + Navbar + scrollable main) — confirm spacing and proportions are exact
+- Sidebar collapsed state renders icon-only rail cleanly at 72px width with correct icon alignment
+- Navbar: confirm centered logo alignment; add a user avatar/profile menu in the top-right corner
+- Responsive breakpoints — desktop first (matching Figma at 1440px), then graceful degradation to tablet
 
 ### 9.4 Component Polish (in priority order)
-1. **PostCard** — most-seen component, polish first
-2. **UserCard** — second most common
-3. **ChatPanel** — visible when open, but secondary
-4. **Filters and forms** — last among the main components
+1. **PostCard** — most-seen component; add hover lift (`shadow-md`, subtle `-translate-y-0.5`), rounded corners, image aspect-ratio polish
+2. **CardPost** — same hover treatment; ensure square image crops cleanly
+3. **SectionHeader** — "See More →" link gets an underline animation on hover; arrow shifts right 2px
+4. **UserCard** — avatar, skill badge, interest chips
+5. **ChatPanel** — visible when open, but secondary
+6. **MatchmakingFilters and forms** — last among the main components
 
 ### 9.5 Page-Level Polish
-- Home, For You, Around You each get layout treatment matching Figma
-- Empty states get illustrations or styled text instead of "Nothing here yet."
-- Loading states use shadcn Skeletons instead of "Loading..."
+- Home: section spacing matches Figma (55px top padding, 25px gap between sections, 45px side padding)
+- For You, Around You: adopt the same section-header + card-row layout language
+- PostDetail: full-width cover image, generous body typography (line-height, max-width)
+- Empty states get styled text or simple SVG illustrations instead of "Nothing here yet."
+- Loading states use shadcn Skeletons shaped like the real cards (PostCard skeleton, CardPost skeleton)
+
+### 9.6 Sidebar Collapse Transition
+- Width animates with `transition-all duration-200 ease-in-out`
+- Nav labels fade out (`opacity-0 w-0 overflow-hidden`) as sidebar collapses; fade back in on expand
+- Footer logo hides when collapsed (`opacity-0`), reappears on expand
+- Collapsed sidebar shows a tooltip on icon hover (shadcn `Tooltip`) so labels are still discoverable
 
 **Exit criteria:** App looks like a real product. Matches the Figma intent without being a pixel-perfect export.
 
@@ -363,9 +454,15 @@ Each store should expose actions that call the API layer (not mock data directly
 
 ### 10.2 Component Micro-Interactions
 - Button hover/press states (subtle scale or color shift)
-- Card hover states
+- `PostCard` and `CardPost`: hover lifts with `whileHover={{ y: -2, boxShadow }}` via Framer Motion
+- "See More →" arrow: `whileHover={{ x: 3 }}` nudge on the arrow icon
 - Chat panel slide-in/slide-out
 - Message send animation (gentle fade-in)
+
+### 10.6 Sidebar Collapse Animation
+- Replace the CSS `transition-all` width change with Framer Motion `motion.aside` using `animate={{ width }}` (expanded: 288px, collapsed: 72px)
+- Nav labels use `AnimatePresence` + `motion.span` with `initial={{ opacity: 0, width: 0 }}` / `animate={{ opacity: 1, width: 'auto' }}` for a clean slide-and-fade
+- Footer logo uses `AnimatePresence` to mount/unmount with a fade
 
 ### 10.3 Loading Polish
 - Replace generic Skeletons with content-shape Skeletons
