@@ -42,15 +42,13 @@ export default function UserProfile() {
           <header className="flex items-center gap-5">
             <img
               src={user.avatar}
-              alt={user.name}
+              alt={user.fullName}
               className="w-24 h-24 rounded-full object-cover bg-[#d5d5d5] shrink-0"
             />
             <div className="flex flex-col gap-1">
-              <h1 className="font-raleway font-bold text-3xl text-black">{user.name}</h1>
+              <h1 className="font-raleway font-bold text-3xl text-black">{user.fullName}</h1>
+              <p className="font-inter text-sm text-black/60">@{user.username}</p>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-inter text-xs text-black/80 border border-black/20 rounded-full px-2 py-0.5 capitalize">
-                  {user.skillLevel}
-                </span>
                 <span className="flex items-center gap-1 font-inter text-sm text-black/70">
                   <MapPin size={14} strokeWidth={1.5} />
                   {user.location}

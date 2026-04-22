@@ -9,12 +9,16 @@ function enrichPost(post: Post): PostWithAuthor {
   const u = USERS_BY_ID[post.authorId];
   return {
     ...post,
-    author: { id: u.id, name: u.name, avatar: u.avatar },
+    author: { id: u.id, fullName: u.fullName, username: u.username, avatar: u.avatar },
   };
 }
 
 function enrichPosts(posts: Post[]): PostWithAuthor[] {
   return posts.map(enrichPost);
+}
+
+function cityOf(location: string): string {
+  return location.split(',')[0].trim().toLowerCase();
 }
 
 const RECOMMENDED_COUNT = 12;
@@ -23,9 +27,16 @@ const NEARBY_COUNT = 12;
 const currentUser = USERS.find((u) => u.id === CURRENT_USER_ID)!;
 const otherUsers = USERS.filter((u) => u.id !== CURRENT_USER_ID);
 
+const currentCity = cityOf(currentUser.location);
 const recommendedUsers = otherUsers
-  .filter((u) => u.skillLevel === currentUser.skillLevel)
-  .slice(0, RECOMMENDED_COUNT);
+  .map((u) => {
+    const sharedInterests = u.interests.filter((i) => currentUser.interests.includes(i)).length;
+    const sameCity = cityOf(u.location) === currentCity ? 1 : 0;
+    return { u, score: sharedInterests * 2 + sameCity };
+  })
+  .sort((a, b) => b.score - a.score)
+  .slice(0, RECOMMENDED_COUNT)
+  .map((s) => s.u);
 
 const nearbyUsers = otherUsers
   .filter((u) => u.id !== currentUser.id && !recommendedUsers.includes(u))

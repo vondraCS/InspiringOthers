@@ -42,7 +42,7 @@ export default function PostDetail() {
           <div className="flex items-center gap-1 font-inter text-lg text-black">
             <span>By</span>
             <Link to={`/users/${post.author.id}`} className="hover:underline">
-              {post.author.name}
+              {post.author.fullName}
             </Link>
           </div>
 

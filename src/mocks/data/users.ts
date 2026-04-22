@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { type User, SkillLevel } from '@/types';
+import { type User } from '@/types';
 
 const INTERESTS = [
   'Photography',
@@ -57,17 +57,23 @@ const GOALS = [
   'Build a body of work I am proud of',
 ];
 
-const SKILL_LEVELS = [SkillLevel.Beginner, SkillLevel.Intermediate, SkillLevel.Advanced];
-
 export function generateUsers(count: number): User[] {
   return Array.from({ length: count }, () => {
     const id = faker.string.uuid();
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    const rawUsername = faker.internet
+      .username({ firstName, lastName })
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '')
+      .slice(0, 20);
+    const username = rawUsername.length >= 3 ? rawUsername : `${rawUsername}_user`.slice(0, 20);
     return {
       id,
-      name: faker.person.fullName(),
+      fullName: `${firstName} ${lastName}`,
+      username,
       avatar: `https://i.pravatar.cc/150?u=${id}`,
       interests: faker.helpers.arrayElements(INTERESTS, { min: 2, max: 5 }),
-      skillLevel: faker.helpers.arrayElement(SKILL_LEVELS),
       location: `${faker.location.city()}, ${faker.location.country()}`,
       goals: faker.helpers.arrayElements(GOALS, { min: 1, max: 3 }),
     };

@@ -1,15 +1,16 @@
-export enum SkillLevel {
-  Beginner = 'beginner',
-  Intermediate = 'intermediate',
-  Advanced = 'advanced',
-}
+export const SkillLevel = {
+  Beginner: 'beginner',
+  Intermediate: 'intermediate',
+  Advanced: 'advanced',
+} as const;
+export type SkillLevel = (typeof SkillLevel)[keyof typeof SkillLevel];
 
 export interface User {
   id: string;
-  name: string;
+  fullName: string;
+  username: string;
   avatar: string;
   interests: string[];
-  skillLevel: SkillLevel;
   location: string;
   goals: string[];
 }
@@ -24,7 +25,7 @@ export interface Post {
   tags: string[];
 }
 
-export type PostAuthor = Pick<User, 'id' | 'name' | 'avatar'>;
+export type PostAuthor = Pick<User, 'id' | 'fullName' | 'username' | 'avatar'>;
 
 export interface PostWithAuthor extends Post {
   author: PostAuthor;

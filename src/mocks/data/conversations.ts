@@ -42,7 +42,7 @@ export function generateConversations(users: User[]): Conversation[] {
       id: faker.string.uuid(),
       type: 'dm',
       participantIds: [currentUser.id, other.id],
-      name: other.name,
+      name: other.fullName,
     });
   }
 

@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type SkillLevel } from '@/types';
 
 type UserCardProps = {
   id: string;
-  name: string;
+  fullName: string;
+  username: string;
   avatar: string;
-  skillLevel: SkillLevel;
   interests: string[];
   location: string;
   className?: string;
@@ -15,9 +14,9 @@ type UserCardProps = {
 
 export function UserCard({
   id,
-  name,
+  fullName,
+  username,
   avatar,
-  skillLevel,
   interests,
   location,
   className,
@@ -30,21 +29,19 @@ export function UserCard({
         className,
       )}
     >
-      <Link to={profileHref} aria-label={name} className="shrink-0">
+      <Link to={profileHref} aria-label={fullName} className="shrink-0">
         <img
           src={avatar}
-          alt={name}
+          alt={fullName}
           className="w-20 h-20 rounded-full object-cover bg-[#d5d5d5]"
         />
       </Link>
 
       <Link to={profileHref} className="hover:underline text-center">
-        <h3 className="font-inter font-bold text-base text-black leading-tight">{name}</h3>
+        <h3 className="font-inter font-bold text-base text-black leading-tight">{fullName}</h3>
       </Link>
 
-      <span className="font-inter text-xs text-black/80 border border-black/20 rounded-full px-2 py-0.5 capitalize">
-        {skillLevel}
-      </span>
+      <span className="font-inter text-xs text-black/60 leading-tight">@{username}</span>
 
       <div className="flex items-center gap-1 text-black/70">
         <MapPin size={12} strokeWidth={1.5} />

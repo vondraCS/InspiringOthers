@@ -1,14 +1,10 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useAuthStore } from '@/store/authStore';
-import { SkillLevel, type User } from '@/types';
+import { type User } from '@/types';
 import { toast } from '@/components/ui/toast';
 
-const SKILL_LEVELS: SkillLevel[] = [
-  SkillLevel.Beginner,
-  SkillLevel.Intermediate,
-  SkillLevel.Advanced,
-];
+const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/;
 
 const INTEREST_POOL = [
   'Photography',
@@ -66,9 +62,9 @@ export function SettingsDialog({ open, onOpenChange }: Props) {
 
 function SettingsForm({ user, onClose }: { user: User; onClose: () => void }) {
   const updateProfile = useAuthStore((s) => s.updateProfile);
-  const [name, setName] = useState(user.name);
+  const [fullName, setFullName] = useState(user.fullName);
+  const [username, setUsername] = useState(user.username);
   const [avatar, setAvatar] = useState(user.avatar);
-  const [skillLevel, setSkillLevel] = useState<SkillLevel>(user.skillLevel);
   const [interests, setInterests] = useState<string[]>(user.interests);
 
   const toggleInterest = (interest: string) => {
@@ -78,14 +74,18 @@ function SettingsForm({ user, onClose }: { user: User; onClose: () => void }) {
   };
 
   const handleSave = () => {
-    if (!name.trim()) {
-      toast.error({ title: 'Name is required' });
+    if (!fullName.trim()) {
+      toast.error({ title: 'Full name is required' });
+      return;
+    }
+    if (!USERNAME_PATTERN.test(username)) {
+      toast.error({ title: 'Invalid username', description: 'Lowercase letters, numbers, and underscore only (3–20 chars).' });
       return;
     }
     updateProfile({
-      name: name.trim(),
+      fullName: fullName.trim(),
+      username,
       avatar: avatar.trim() || user.avatar,
-      skillLevel,
       interests,
     });
     toast.success({ title: 'Settings saved' });
@@ -98,13 +98,25 @@ function SettingsForm({ user, onClose }: { user: User; onClose: () => void }) {
         <h3 className="font-inter font-semibold text-base text-black">Account</h3>
         <div className="flex flex-col gap-3">
           <label className="flex flex-col gap-1">
-            <span className="font-inter text-sm text-black/70">Display name</span>
+            <span className="font-inter text-sm text-black/70">Full name</span>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
             />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-inter text-sm text-black/70">Username</span>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
+            />
+            <span className="font-inter text-xs text-black/50">
+              Lowercase letters, numbers, and underscore. 3–20 characters.
+            </span>
           </label>
           <label className="flex flex-col gap-1">
             <span className="font-inter text-sm text-black/70">Avatar URL</span>
@@ -115,27 +127,6 @@ function SettingsForm({ user, onClose }: { user: User; onClose: () => void }) {
               className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
             />
           </label>
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h3 className="font-inter font-semibold text-base text-black">Skill level</h3>
-        <div className="flex flex-wrap gap-3">
-          {SKILL_LEVELS.map((level) => (
-            <label
-              key={level}
-              className="flex items-center gap-1.5 font-inter text-sm text-black cursor-pointer capitalize"
-            >
-              <input
-                type="radio"
-                name="skill-level"
-                value={level}
-                checked={skillLevel === level}
-                onChange={() => setSkillLevel(level)}
-              />
-              {level}
-            </label>
-          ))}
         </div>
       </section>
 

@@ -1,5 +1,4 @@
 import { useMatchmakingStore } from '@/store/matchmakingStore';
-import { SkillLevel } from '@/types';
 import { cn } from '@/lib/utils';
 
 type MatchmakingFiltersProps = {
@@ -7,12 +6,6 @@ type MatchmakingFiltersProps = {
   showNearbyToggle?: boolean;
   className?: string;
 };
-
-const SKILL_LEVEL_OPTIONS: SkillLevel[] = [
-  SkillLevel.Beginner,
-  SkillLevel.Intermediate,
-  SkillLevel.Advanced,
-];
 
 export function MatchmakingFilters({
   availableInterests,
@@ -22,13 +15,6 @@ export function MatchmakingFilters({
   const filters = useMatchmakingStore((s) => s.filters);
   const setFilters = useMatchmakingStore((s) => s.setFilters);
 
-  const toggleSkill = (level: SkillLevel) => {
-    const next = filters.skillLevels.includes(level)
-      ? filters.skillLevels.filter((l) => l !== level)
-      : [...filters.skillLevels, level];
-    setFilters({ skillLevels: next });
-  };
-
   const toggleInterest = (interest: string) => {
     const next = filters.interests.includes(interest)
       ? filters.interests.filter((i) => i !== interest)
@@ -36,10 +22,9 @@ export function MatchmakingFilters({
     setFilters({ interests: next });
   };
 
-  const clearAll = () => setFilters({ skillLevels: [], interests: [], nearbyOnly: false });
+  const clearAll = () => setFilters({ interests: [], nearbyOnly: false });
 
-  const hasActiveFilters =
-    filters.skillLevels.length > 0 || filters.interests.length > 0 || filters.nearbyOnly;
+  const hasActiveFilters = filters.interests.length > 0 || filters.nearbyOnly;
 
   return (
     <div
@@ -59,25 +44,6 @@ export function MatchmakingFilters({
             Clear all
           </button>
         )}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <span className="font-inter text-sm text-black/70">Skill level</span>
-        <div className="flex flex-wrap gap-3">
-          {SKILL_LEVEL_OPTIONS.map((level) => (
-            <label
-              key={level}
-              className="flex items-center gap-1.5 font-inter text-sm text-black cursor-pointer capitalize"
-            >
-              <input
-                type="checkbox"
-                checked={filters.skillLevels.includes(level)}
-                onChange={() => toggleSkill(level)}
-              />
-              {level}
-            </label>
-          ))}
-        </div>
       </div>
 
       {availableInterests.length > 0 && (

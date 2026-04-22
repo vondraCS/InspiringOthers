@@ -1,13 +1,11 @@
 import { create } from 'zustand';
-import { type User, type SkillLevel } from '@/types';
+import { type User } from '@/types';
 import { getCurrentUser } from '@/lib/api/users';
 import { useUserStore } from './userStore';
 import { toast } from '@/components/ui/toast';
 
 export type ProfileUpdate = Partial<
-  Pick<User, 'name' | 'avatar' | 'location' | 'interests' | 'goals'> & {
-    skillLevel: SkillLevel;
-  }
+  Pick<User, 'fullName' | 'username' | 'avatar' | 'location' | 'interests' | 'goals'>
 >;
 
 interface AuthState {

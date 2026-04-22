@@ -33,7 +33,7 @@ export default function Home() {
                 id={post.id}
                 title={post.title}
                 authorId={post.author.id}
-                authorName={post.author.name}
+                authorName={post.author.fullName}
                 body={post.body}
                 imageUrl={post.coverImage}
                 tags={post.tags}
@@ -57,7 +57,7 @@ export default function Home() {
                 id={post.id}
                 title={post.title}
                 authorId={post.author.id}
-                authorName={post.author.name}
+                authorName={post.author.fullName}
                 body={post.body}
                 imageUrl={post.coverImage}
               />

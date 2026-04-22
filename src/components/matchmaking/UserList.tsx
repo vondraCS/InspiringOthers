@@ -16,9 +16,9 @@ export function UserList({ users, layout = 'row', className }: UserListProps) {
           <UserCard
             key={user.id}
             id={user.id}
-            name={user.name}
+            fullName={user.fullName}
+            username={user.username}
             avatar={user.avatar}
-            skillLevel={user.skillLevel}
             interests={user.interests}
             location={user.location}
           />
@@ -33,9 +33,9 @@ export function UserList({ users, layout = 'row', className }: UserListProps) {
         <UserCard
           key={user.id}
           id={user.id}
-          name={user.name}
+          fullName={user.fullName}
+          username={user.username}
           avatar={user.avatar}
-          skillLevel={user.skillLevel}
           interests={user.interests}
           location={user.location}
         />

@@ -1,11 +1,10 @@
 import { create } from 'zustand';
-import { type User, SkillLevel } from '@/types';
+import { type User } from '@/types';
 import { getRecommendedUsers, getNearbyUsers } from '@/lib/api/users';
 import { useAuthStore } from './authStore';
 import { toast } from '@/components/ui/toast';
 
 interface MatchmakingFilters {
-  skillLevels: SkillLevel[];
   interests: string[];
   nearbyOnly: boolean;
 }
@@ -43,9 +42,6 @@ function applyFilters(
   currentUserCity: string | null,
 ): User[] {
   return users.filter((u) => {
-    if (filters.skillLevels.length > 0 && !filters.skillLevels.includes(u.skillLevel)) {
-      return false;
-    }
     if (
       filters.interests.length > 0 &&
       !filters.interests.some((i) => u.interests.includes(i))
@@ -62,7 +58,7 @@ function applyFilters(
 export const useMatchmakingStore = create<MatchmakingState>((set, get) => ({
   recommendedUsers: [],
   nearbyUsers: [],
-  filters: { skillLevels: [], interests: [], nearbyOnly: false },
+  filters: { interests: [], nearbyOnly: false },
   loadingRecommended: false,
   loadingNearby: false,
   error: null,
