@@ -26,7 +26,7 @@ InspiringOthers/
 │   ├── components/
 │   │   ├── ErrorBoundary.tsx     (top-level React error boundary — renders a fallback + "Try again")
 │   │   ├── layout/               (app shell: Sidebar, Navbar, Shell, Logo)
-│   │   ├── feed/                 (post cards + section header: PostCard, CardPost, SectionHeader)
+│   │   ├── feed/                 (post + section header: Post, SectionHeader)
 │   │   ├── ui/                   (shadcn primitives + Base UI wrappers — button, dialog, toast)
 │   │   ├── chat/                 (InspireChat: ChatLauncher, ChatPanel, ConversationList, ConversationView, MessageInput)
 │   │   ├── settings/             (SettingsDialog — profile editor)
@@ -76,8 +76,7 @@ Skipped in this tree: `node_modules/`, `dist/`, `.git/`, `.claude/`.
 
 ### Feed components — `src/components/feed/`
 
-- `PostCard.tsx` — featured/tall card: 4:3 image, title, author byline, body excerpt with inline "Read More", optional tag chips. Title/image/"Read More" all link to `/posts/:id`; byline links to `/users/:authorId`. Props: `id, title, authorId, authorName, body, imageUrl?, tags?, className?`.
-- `CardPost.tsx` — compact/square card for recommended rows. Same linking behavior as `PostCard` (no tags, no "Read More"). Props: `id, title, authorId, authorName, body, imageUrl?, className?`.
+- `Post.tsx` — unified post card with two variants. `featured`: 4:3 image, title (reserved 2-line height so images align across a row), author byline, body excerpt, optional tag chips. `compact`: square image, centered byline, title, body — used in compact recommended rows. Uses a stretched-link pattern so clicking anywhere on the card navigates to `/posts/:id`; the byline is a layered link to `/users/:authorId`. Props: `id, title, authorId, authorName, body, imageUrl?, tags?, variant?, className?`.
 - `SectionHeader.tsx` — reusable section heading: Raleway-bold title on the left, optional "See More →" link (with `ArrowRight` icon) on the right. Props: `title, seeMoreHref?, seeMoreLabel?, className?`. Used by Featured Posts, Recommended Posts, and "Posts for you" sections.
 
 ### Chat components — `src/components/chat/`
@@ -112,8 +111,8 @@ Class-component error boundary wrapping `<ToastProvider>` + `<BrowserRouter>` in
 
 ### Pages — `src/pages/` (all default exports)
 
-- `Home.tsx` — wired to `feedStore`. On mount calls `loadFeatured()` and `loadRecommended()`; renders Featured Posts (3-col `PostCard` grid, top 3) and Recommended Posts (horizontal `CardPost` row, top 4, with "See More →" to `/for-you`). Shows "Loading..." / "No posts yet." states.
-- `ForYou.tsx` — wired to `feedStore.loadForYou()` and `matchmakingStore.loadRecommended()`. Renders two sections: "People you might connect with" (`MatchmakingFilters` + horizontal `UserList` of up to 8 filtered recommended users, with "See More →" to `/people`) and "Posts for you" (3-col `PostCard` grid, page-size 20 with "Load More" button — no infinite scroll). Shows loading/empty states per section.
+- `Home.tsx` — wired to `feedStore`. On mount calls `loadFeatured()` and `loadRecommended()`; renders Featured Posts (3-col `Post variant="featured"` grid, top 3) and Recommended Posts (horizontal `Post variant="compact"` row, top 4, with "See More →" to `/for-you`). Shows "Loading..." / "No posts yet." states.
+- `ForYou.tsx` — wired to `feedStore.loadForYou()` and `matchmakingStore.loadRecommended()`. Renders two sections: "People you might connect with" (`MatchmakingFilters` + horizontal `UserList` of up to 8 filtered recommended users, with "See More →" to `/people`) and "Posts for you" (3-col `Post variant="featured"` grid, page-size 20 with "Load More" button — no infinite scroll). Shows loading/empty states per section.
 - `AroundYou.tsx` — wired to `matchmakingStore.loadNearby()` and `eventsStore.loadLocal()`. Renders two sections: "Nearby peers" (`MatchmakingFilters` + `UserList` of filtered nearby users) and "Local events" (vertical list of events with title, formatted date via `date-fns`, location, and short description). Shows loading/empty states per section.
 - `PostDetail.tsx` — route `/posts/:id`. Reads from `feedStore.postsById[id]` / `loadingPostById[id]` / `errorPostById[id]`; calls `loadPost(id)` on mount. Renders back button (`useNavigate(-1)`), Raleway title, author byline linking to `/users/:authorId`, 16:9 cover image, full body (preserves whitespace), and tag chips. Fallback states for loading, error, and not-found.
 - `UserProfile.tsx` — route `/users/:id`. Reads from `userStore.usersById[id]` / `loadingById[id]` / `errorById[id]` and calls `loadUser(id)` on mount. Renders back button (`useNavigate(-1)`), circular avatar, name, skill-level chip, location with `MapPin`, an Interests chip row, and a Goals list (each goal rendered with a green left border). Fallback states for loading, error, and not-found.

@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { PostCard } from '@/components/feed/PostCard';
-import { CardPost } from '@/components/feed/CardPost';
+import { Post } from '@/components/feed/Post';
 import { SectionHeader } from '@/components/feed/SectionHeader';
 import { useFeedStore } from '@/store/feedStore';
 
@@ -28,8 +27,9 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-3 gap-10">
             {featured.slice(0, 3).map((post) => (
-              <PostCard
+              <Post
                 key={post.id}
+                variant="featured"
                 id={post.id}
                 title={post.title}
                 authorId={post.author.id}
@@ -52,8 +52,9 @@ export default function Home() {
         ) : (
           <div className="flex gap-10 justify-center flex-wrap">
             {recommended.slice(0, 4).map((post) => (
-              <CardPost
+              <Post
                 key={post.id}
+                variant="compact"
                 id={post.id}
                 title={post.title}
                 authorId={post.author.id}

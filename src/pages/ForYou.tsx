@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { PostCard } from '@/components/feed/PostCard';
+import { Post } from '@/components/feed/Post';
 import { SectionHeader } from '@/components/feed/SectionHeader';
 import { UserList } from '@/components/matchmaking/UserList';
 import { MatchmakingFilters } from '@/components/matchmaking/MatchmakingFilters';
@@ -65,8 +65,9 @@ export default function ForYou() {
           <>
             <div className="grid grid-cols-3 gap-10">
               {shownPosts.map((post) => (
-                <PostCard
+                <Post
                   key={post.id}
+                  variant="featured"
                   id={post.id}
                   title={post.title}
                   authorId={post.author.id}
