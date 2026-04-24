@@ -14,9 +14,7 @@ dist-ssr
 .env
 .env.*
 
-# Root markdown files (except README)
-/*.md
-!README.md
+docs
 
 # Editor directories and files
 .vscode/*
