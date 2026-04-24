@@ -4,13 +4,13 @@ import './index.css';
 import App from './App.tsx';
 
 async function bootstrap() {
-  if (import.meta.env.DEV) {
-    const { worker } = await import('./mocks/browser');
-    await worker.start({
-      onUnhandledRequest: 'bypass',
-      serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
-    });
+  const { worker } = await import('./mocks/browser');
+  await worker.start({
+    onUnhandledRequest: 'bypass',
+    serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+  });
 
+  if (import.meta.env.DEV) {
     const api = await import('./lib/api/users');
     Object.assign(window, api);
   }
