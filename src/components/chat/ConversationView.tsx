@@ -29,9 +29,9 @@ export function ConversationView({ conversation }: { conversation: Conversation 
     <>
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
         {loading && messages.length === 0 ? (
-          <p className="font-inter text-sm text-black">Loading...</p>
+          <p className="font-inter text-sm text-muted-foreground">Loading...</p>
         ) : messages.length === 0 ? (
-          <p className="font-inter text-sm text-black">No messages yet.</p>
+          <p className="font-inter text-sm text-muted-foreground">No messages yet.</p>
         ) : (
           messages.map((m) => {
             const own = m.authorId === currentUserId;
@@ -42,8 +42,10 @@ export function ConversationView({ conversation }: { conversation: Conversation 
               >
                 <div
                   className={cn(
-                    'rounded-[12px] px-3 py-2 font-inter text-sm text-black whitespace-pre-wrap break-words',
-                    own ? 'bg-[#2ECB71]' : 'bg-black/5',
+                    'rounded-2xl px-3 py-1.5 font-inter text-sm whitespace-pre-wrap break-words',
+                    own
+                      ? 'bg-primary text-primary-foreground rounded-br-md'
+                      : 'bg-muted text-foreground rounded-bl-md',
                   )}
                 >
                   {m.body}

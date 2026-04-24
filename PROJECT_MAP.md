@@ -26,11 +26,11 @@ InspiringOthers/
 │   ├── components/
 │   │   ├── ErrorBoundary.tsx     (top-level React error boundary — renders a fallback + "Try again")
 │   │   ├── layout/               (app shell: Sidebar, Navbar, Shell, Logo)
-│   │   ├── feed/                 (post + section header: Post, SectionHeader)
-│   │   ├── ui/                   (shadcn primitives + Base UI wrappers — button, dialog, toast)
+│   │   ├── feed/                 (post + section header + loading: Post, PostSkeleton, SectionHeader)
+│   │   ├── ui/                   (shadcn primitives + Base UI wrappers — button, dialog, toast, tooltip, dropdown-menu, skeleton, empty-state)
 │   │   ├── chat/                 (InspireChat: ChatLauncher, ChatPanel, ConversationList, ConversationView, MessageInput)
 │   │   ├── settings/             (SettingsDialog — profile editor)
-│   │   └── matchmaking/          (UserCard, UserList, MatchmakingFilters)
+│   │   └── matchmaking/          (UserCard, UserCardSkeleton, UserList, MatchmakingFilters)
 │   ├── pages/                    (route-level components; default exports — Home, ForYou, AroundYou, PostDetail, UserProfile, People, Onboarding, NotFound)
 │   ├── features/                 (feature-scoped logic — phased)
 │   │   ├── chat/                 (mockRealtime.ts — dev-only fake incoming replies)
@@ -42,6 +42,7 @@ InspiringOthers/
 │   │   └── data/                 (Faker generators — seed: 42; users, posts, conversations, groups, events)
 │   ├── lib/
 │   │   ├── api/                  (typed HTTP clients — the API surface)
+│   │   ├── useMediaQuery.ts      (useSyncExternalStore hook for matchMedia subscriptions)
 │   │   └── utils.ts              (cn helper)
 │   ├── types/                    (global TS types — single index.ts)
 │   ├── App.tsx
@@ -70,14 +71,15 @@ Skipped in this tree: `node_modules/`, `dist/`, `.git/`, `.claude/`.
 ### App shell — `src/components/layout/`
 
 - `Shell.tsx` — wraps Sidebar + (Navbar + scrollable `<main>`); mounts `<ChatPanel>` + `<ChatLauncher>` in the bottom-right and the `<SettingsDialog>` driven by `uiStore.settingsOpen`; calls `authStore.initialize()` on mount; runs `useMockRealtime()` to inject fake incoming chat messages while the app is open.
-- `Navbar.tsx` — 100px header with centered Logo (large); absolute-positioned "Log out" button on the right when `authStore.currentUser` exists. Logout clears the `io-onboarded` localStorage flag, calls `authStore.logout()`, and redirects to `/onboarding`.
-- `Sidebar.tsx` — green (`#2ECB71`) 288px rail with `NavLink`s (Home, For You, Around You), Settings button (opens `SettingsDialog` via `uiStore.setSettingsOpen(true)`), small Logo footer. Uses Lucide icons.
+- `Navbar.tsx` — 100px header with centered Logo (large); right-side avatar menu (current user's avatar + name) opens a `DropdownMenu` with "Settings" (opens `SettingsDialog`) and "Log out". Logout clears the `io-onboarded` localStorage flag, calls `authStore.logout()`, and redirects to `/onboarding`. Renders nothing on the right until `authStore.currentUser` loads.
+- `Sidebar.tsx` — `bg-primary` 288px rail (72px when collapsed) with `NavLink`s (Home, For You, Around You), Settings button (opens `SettingsDialog` via `uiStore.setSettingsOpen(true)`), small Logo footer. Uses Lucide icons. Nav labels + footer Logo fade via `opacity` / `w-0 overflow-hidden` (200ms) instead of unmounting. Collapsed-state icons wrap in `<Tooltip side="right">` so labels remain discoverable. Effective collapsed state is `storedCollapsed || isBelowLg` via `useMediaQuery('(max-width: 1023.98px)')`, so under the `lg` breakpoint the rail collapses automatically without mutating the persisted preference.
 - `Logo.tsx` — exports `Logo` component + internal `LogoIcon` SVG. Props: `size: 'sm' | 'lg'`, `color: 'green' | 'black'`.
 
 ### Feed components — `src/components/feed/`
 
-- `Post.tsx` — unified post card with two variants. `featured`: 4:3 image, title (reserved 2-line height so images align across a row), author byline, body excerpt, optional tag chips. `compact`: square image, centered byline, title, body — used in compact recommended rows. Uses a stretched-link pattern so clicking anywhere on the card navigates to `/posts/:id`; the byline is a layered link to `/users/:authorId`. Props: `id, title, authorId, authorName, body, imageUrl?, tags?, variant?, className?`.
-- `SectionHeader.tsx` — reusable section heading: Raleway-bold title on the left, optional "See More →" link (with `ArrowRight` icon) on the right. Props: `title, seeMoreHref?, seeMoreLabel?, className?`. Used by Featured Posts, Recommended Posts, and "Posts for you" sections.
+- `Post.tsx` — unified post card with two variants. `featured`: 4:3 image, title (reserved 2-line height so images align across a row), author byline, body excerpt, optional tag chips. `compact`: square image, centered byline, title, body — used in compact recommended rows. Uses a stretched-link pattern so clicking anywhere on the card navigates to `/posts/:id`; the byline is a layered link to `/users/:authorId`. Hover treatment: `group` wrapper + `hover:-translate-y-0.5 hover:shadow-card-hover` on the article, `group-hover:scale-[1.03]` zoom on the image, and `group-hover:text-primary` color shift on the title. Tag chips use the tokenised `bg-muted text-muted-foreground` pill treatment. Props: `id, title, authorId, authorName, body, imageUrl?, tags?, variant?, className?`.
+- `PostSkeleton.tsx` — loading placeholder matching both `Post` variants (featured and compact). Used by Home, ForYou, and PostDetail while data loads. Uses `Skeleton` primitive.
+- `SectionHeader.tsx` — reusable section heading: Raleway-bold title on the left (via `text-heading` token), optional "See More →" link (with `ArrowRight` icon) on the right. The underline is a grow-from-left pseudo-element (`scale-x-0 group-hover:scale-x-100`) and the text shifts to `text-primary` on hover. Props: `title, seeMoreHref?, seeMoreLabel?, className?`. Used by Featured Posts, Recommended Posts, and "Posts for you" sections.
 
 ### Chat components — `src/components/chat/`
 
@@ -91,15 +93,20 @@ Reach the panel via the floating launcher; panel + launcher both live in `Shell`
 
 ### Matchmaking components — `src/components/matchmaking/`
 
-- `UserCard.tsx` — compact peer card (200px wide): circular avatar, name, skill-level chip, location with `MapPin` icon, up to 3 interest chips. Avatar + name link to `/users/:id`. Props: `id, name, avatar, skillLevel, interests, location, className?`.
+- `UserCard.tsx` — compact peer card (200px wide): circular avatar (with `ring-1 ring-border-subtle`), name, `@username`, location with `MapPin` icon, up to 3 interest pills. Avatar + name link to `/users/:id`. Hover: `hover:-translate-y-0.5 hover:shadow-card`. Props: `id, fullName, username, avatar, interests, location, className?`.
+- `UserCardSkeleton.tsx` — loading placeholder sized to match `UserCard`. Used by ForYou and AroundYou while recommendations load.
 - `UserList.tsx` — renders a list of `User`s. Two layouts: `'row'` (default; flex-wrap row) and `'grid'` (4-col CSS grid). Props: `users: User[], layout?: 'row' | 'grid', className?`.
-- `MatchmakingFilters.tsx` — read/writes `matchmakingStore.filters`. Skill-level checkboxes (3 options), interest checkboxes (caller-supplied via `availableInterests` prop — usually derived from the visible user list), and a "Near me" toggle (hideable via `showNearbyToggle={false}`). Includes a "Clear all" button when any filter is active.
+- `MatchmakingFilters.tsx` — read/writes `matchmakingStore.filters`. Interest chips render as clickable toggle buttons (selected: `bg-primary/15 border-primary text-primary`, unselected: neutral outline) and a "Near me" checkbox (hideable via `showNearbyToggle={false}`). Includes a "Clear all" button when any filter is active. Uses `accent-primary` for native checkbox styling.
 
 ### UI primitives — `src/components/ui/`
 
 - `button.tsx` — shadcn Button built on `@base-ui/react` + CVA. Variants: default, outline, secondary, ghost, destructive, link. Sizes: default, xs, sm, lg, icon (+ icon-xs/sm/lg). **Do not hand-edit — regenerate via shadcn CLI.**
 - `dialog.tsx` — wraps Base UI `Dialog.Root/Portal/Backdrop/Popup/Title/Description/Close`. Exports `Dialog`, `DialogTrigger`, `DialogClose`, and a ready-styled `DialogContent` (centered, 520px max, backdrop, X close button). Hand-edit freely — not a shadcn-generated primitive.
 - `toast.tsx` — wraps Base UI Toast. Exports a `toastManager` singleton (from `Toast.createToastManager()`), a `toast` helper API (`toast.show|success|error({ title, description, timeout })`), and a `<ToastProvider>` that mounts the provider + a top-right viewport/portal with styled toasts. Stores import `toast` and call `toast.error(...)` from their catch blocks so API failures surface globally without cross-store wiring.
+- `tooltip.tsx` — wraps Base UI `Tooltip.Root/Portal/Positioner/Popup`. Exports `Tooltip` (renders children as the trigger via Base UI's `render={element}` pattern) and the raw `TooltipProvider` for shared delay grouping. Props: `children, content, disabled?, side?, sideOffset?, className?`. Used by the collapsed-sidebar icons.
+- `dropdown-menu.tsx` — wraps Base UI `Menu.Root/Trigger/Portal/Positioner/Popup/Item`. Exports `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent` (styled popover with fade-in/out), and `DropdownMenuItem` (highlighted via `data-[highlighted]:bg-muted`). Used by the Navbar avatar menu.
+- `skeleton.tsx` — minimal pulse-animated div (`animate-pulse bg-muted rounded-md`). Used by `PostSkeleton`, `UserCardSkeleton`, `PostDetail`, and `UserProfile` loading states.
+- `empty-state.tsx` — centered icon + title + optional description block. Props: `icon?: LucideIcon, title, description?, className?`. Used across Home, ForYou, AroundYou to replace bare "No X yet." strings.
 
 ### Settings — `src/components/settings/`
 
@@ -111,11 +118,11 @@ Class-component error boundary wrapping `<ToastProvider>` + `<BrowserRouter>` in
 
 ### Pages — `src/pages/` (all default exports)
 
-- `Home.tsx` — wired to `feedStore`. On mount calls `loadFeatured()` and `loadRecommended()`; renders Featured Posts (3-col `Post variant="featured"` grid, top 3) and Recommended Posts (horizontal `Post variant="compact"` row, top 4, with "See More →" to `/for-you`). Shows "Loading..." / "No posts yet." states.
-- `ForYou.tsx` — wired to `feedStore.loadForYou()` and `matchmakingStore.loadRecommended()`. Renders two sections: "People you might connect with" (`MatchmakingFilters` + horizontal `UserList` of up to 8 filtered recommended users, with "See More →" to `/people`) and "Posts for you" (3-col `Post variant="featured"` grid, page-size 20 with "Load More" button — no infinite scroll). Shows loading/empty states per section.
-- `AroundYou.tsx` — wired to `matchmakingStore.loadNearby()` and `eventsStore.loadLocal()`. Renders two sections: "Nearby peers" (`MatchmakingFilters` + `UserList` of filtered nearby users) and "Local events" (vertical list of events with title, formatted date via `date-fns`, location, and short description). Shows loading/empty states per section.
-- `PostDetail.tsx` — route `/posts/:id`. Reads from `feedStore.postsById[id]` / `loadingPostById[id]` / `errorPostById[id]`; calls `loadPost(id)` on mount. Renders back button (`useNavigate(-1)`), Raleway title, author byline linking to `/users/:authorId`, 16:9 cover image, full body (preserves whitespace), and tag chips. Fallback states for loading, error, and not-found.
-- `UserProfile.tsx` — route `/users/:id`. Reads from `userStore.usersById[id]` / `loadingById[id]` / `errorById[id]` and calls `loadUser(id)` on mount. Renders back button (`useNavigate(-1)`), circular avatar, name, skill-level chip, location with `MapPin`, an Interests chip row, and a Goals list (each goal rendered with a green left border). Fallback states for loading, error, and not-found.
+- `Home.tsx` — wired to `feedStore`. On mount calls `loadFeatured()` and `loadRecommended()`; renders Featured Posts (responsive `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` of `Post variant="featured"`, top 3) and Recommended Posts (horizontal `Post variant="compact"` row, top 4, with "See More →" to `/for-you`). Loading state renders `PostSkeleton`s shaped like the real cards; empty states use `EmptyState` with a `Newspaper` icon.
+- `ForYou.tsx` — wired to `feedStore.loadForYou()` and `matchmakingStore.loadRecommended()`. Renders two sections: "People you might connect with" (`MatchmakingFilters` + horizontal `UserList` of up to 8 filtered recommended users, with "See More →" to `/people`) and "Posts for you" (responsive `Post variant="featured"` grid, page-size 20 with shadcn `Button` "Load More" — no infinite scroll). Loading states render `UserCardSkeleton` / `PostSkeleton`; empty states use `EmptyState` (`Users` / `Newspaper` icons).
+- `AroundYou.tsx` — wired to `matchmakingStore.loadNearby()` and `eventsStore.loadLocal()`. Renders two sections: "Nearby peers" (`MatchmakingFilters` + `UserList` of filtered nearby users) and "Local events" (vertical list of events with title, formatted date via `date-fns`, location, and short description; each card has hover-lift). Loading states render `UserCardSkeleton` and event-shaped `Skeleton`s; empty states use `EmptyState`.
+- `PostDetail.tsx` — route `/posts/:id`. Reads from `feedStore.postsById[id]` / `loadingPostById[id]` / `errorPostById[id]`; calls `loadPost(id)` on mount. Renders shadcn `Button variant="ghost"` back control (`useNavigate(-1)`), Raleway title at `text-display` size, author byline linking to `/users/:authorId`, 16:9 cover image, and paragraphs split on blank lines rendered inside a `max-w-prose` column at `text-lg leading-relaxed`. Tags render as tokenised pill chips. Loading state is a card-shaped `Skeleton` block.
+- `UserProfile.tsx` — route `/users/:id`. Reads from `userStore.usersById[id]` / `loadingById[id]` / `errorById[id]` and calls `loadUser(id)` on mount. Renders shadcn `Button variant="ghost"` back control, circular avatar (`ring-4 ring-primary/10`), name, `@username`, location with `MapPin`, an Interests chip row (`bg-muted` pills), and a Goals list (each goal rendered with a `border-primary` left border). Loading state is avatar + text `Skeleton`s; fallback states for error and not-found.
 - `People.tsx` — stub (`<h1>People</h1>`) at `/people`; target of the "See More →" link on the For You "People you might connect with" row. Fleshed out in a future phase.
 - `Onboarding.tsx` — route `/onboarding`, rendered outside `Shell`. `react-hook-form` + `zod` (schema: interests non-empty, skillLevel enum, optional location string). One-page form: interest checkboxes (hardcoded 20-entry pool), skill-level radios, optional "City, Country" text input. Submit calls `authStore.updateProfile(...)`, writes `localStorage['io-onboarded'] = '1'`, fires a success toast, and navigates to `/`. Also exports the `ONBOARDED_KEY = 'io-onboarded'` constant used by `OnboardingGuard` (App.tsx) and the Navbar logout handler.
 - `NotFound.tsx` — 404 fallback.
@@ -173,7 +180,7 @@ All functions `fetch()` from `/api/...` and throw on non-ok response.
 - **MSW wiring**: `src/main.tsx` dynamically imports `./mocks/browser` under `import.meta.env.DEV`, then `worker.start({ onUnhandledRequest: 'bypass' })`. The worker file itself is `public/mockServiceWorker.js`. Production builds skip MSW entirely.
 - **Routing**: `src/App.tsx` owns the `BrowserRouter` + routes; active-link styling lives in `src/components/layout/Sidebar.tsx` via `NavLink`.
 - **Path alias `@/*` → `./src/*`**: set in both `vite.config.ts` and `tsconfig.app.json`. Always prefer it over relative imports across directories.
-- **Styling / design tokens**: Tailwind 4 is configured inline via `@tailwindcss/vite` — **there is no `tailwind.config.ts` file**. Theme tokens (oklch colors, light + `.dark` variants, font variables for Raleway/Inter/Geist) live in `src/index.css`. shadcn CLI config is in `components.json` (style `base-nova`, lucide icons, aliases).
+- **Styling / design tokens**: Tailwind 4 is configured inline via `@tailwindcss/vite` — **there is no `tailwind.config.ts` file**. Theme tokens live in `src/index.css`: oklch colors (light + `.dark` variants), font variables (Raleway/Inter/Geist), typography scale (`text-display` 2.625rem, `text-heading` 2.25rem, `text-body` 1rem — each with matching line-heights), shadow tokens (`shadow-card`, `shadow-card-hover`), and semantic aliases (`border-border-subtle`, `bg-image-placeholder`). `--primary` is aligned to brand `#2ECB71` (`oklch(0.77 0.181 151)`) so `bg-primary` matches the design spec. shadcn CLI config is in `components.json` (style `base-nova`, lucide icons, aliases).
 - **Auth stub**: `authStore.initialize()` fetches `/api/auth/me` (the MSW handler returns the mock `CURRENT_USER`). `Shell` triggers `initialize()` on first mount; `chatStore`/`ConversationView` read `currentUser.id` to distinguish own vs. other messages. `authStore.updateProfile(...)` lets the onboarding form and settings dialog mutate the in-memory current user (and writes through to `userStore.cacheUser`). `authStore.logout()` resets auth state; the Navbar logout button also clears the `io-onboarded` localStorage flag and redirects to `/onboarding`. There is no real login.
 - **Error surfacing**: a top-level `<ErrorBoundary>` wraps the app and renders a fallback UI for render-time crashes. Every store loader calls `toast.error(...)` on catch in addition to setting its local `error` field. The `<ToastProvider>` (Base UI Toast) is mounted between the boundary and `BrowserRouter`; toasts render in a fixed top-right viewport via `ToastPortal`.
 - **Feature flags / env config**: none. Dev-mode gating uses `import.meta.env.DEV` only.

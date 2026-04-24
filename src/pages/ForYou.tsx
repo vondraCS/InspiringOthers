@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Newspaper, Users } from 'lucide-react';
 import { Post } from '@/components/feed/Post';
+import { PostSkeleton } from '@/components/feed/PostSkeleton';
 import { SectionHeader } from '@/components/feed/SectionHeader';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
 import { UserList } from '@/components/matchmaking/UserList';
+import { UserCardSkeleton } from '@/components/matchmaking/UserCardSkeleton';
 import { MatchmakingFilters } from '@/components/matchmaking/MatchmakingFilters';
 import { useFeedStore } from '@/store/feedStore';
 import { useMatchmakingStore, applyMatchmakingFilters } from '@/store/matchmakingStore';
@@ -47,9 +52,17 @@ export default function ForYou() {
         <SectionHeader title="People you might connect with" seeMoreHref="/people" />
         <MatchmakingFilters availableInterests={availableInterests} />
         {loadingRecommended && recommendedUsers.length === 0 ? (
-          <p className="font-inter text-base text-black">Loading...</p>
+          <div className="flex gap-6 flex-wrap">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <UserCardSkeleton key={i} />
+            ))}
+          </div>
         ) : shownUsers.length === 0 ? (
-          <p className="font-inter text-base text-black">No peers match these filters.</p>
+          <EmptyState
+            icon={Users}
+            title="No peers match these filters"
+            description="Try removing a filter to see more people."
+          />
         ) : (
           <UserList users={shownUsers.slice(0, 8)} layout="row" />
         )}
@@ -58,12 +71,16 @@ export default function ForYou() {
       <section className="flex flex-col gap-[10px]">
         <SectionHeader title="Posts for you" />
         {loadingForYou && forYou.length === 0 ? (
-          <p className="font-inter text-base text-black">Loading...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PostSkeleton key={i} variant="featured" />
+            ))}
+          </div>
         ) : forYou.length === 0 ? (
-          <p className="font-inter text-base text-black">No posts yet.</p>
+          <EmptyState icon={Newspaper} title="No posts yet" description="Your For You feed will populate as you follow more peers." />
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {shownPosts.map((post) => (
                 <Post
                   key={post.id}
@@ -80,13 +97,9 @@ export default function ForYou() {
             </div>
             {hasMore && (
               <div className="flex justify-center pt-4">
-                <button
-                  type="button"
-                  onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                  className="font-inter text-base text-black border border-black rounded-full px-5 py-2 hover:bg-black/5 cursor-pointer"
-                >
+                <Button variant="outline" size="lg" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
                   Load More
-                </button>
+                </Button>
               </div>
             )}
           </>

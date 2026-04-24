@@ -38,22 +38,32 @@ export function Post({
     <Link
       to={postHref}
       aria-label={title}
-      className="absolute inset-0 z-10 rounded-[15px]"
+      className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
     />
   );
 
   if (variant === 'compact') {
     return (
-      <article className={cn('relative flex flex-col gap-1.5 w-[200px] shrink-0', className)}>
-        <div className="aspect-square bg-[#d5d5d5] rounded-[15px] overflow-hidden w-full flex items-center justify-center">
+      <article
+        className={cn(
+          'group relative flex flex-col gap-1.5 w-[200px] shrink-0 rounded-2xl',
+          'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover',
+          className,
+        )}
+      >
+        <div className="aspect-square bg-image-placeholder rounded-2xl overflow-hidden w-full flex items-center justify-center">
           {imageUrl ? (
-            <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            />
           ) : (
-            <Image size={32} className="text-gray-400" strokeWidth={1} />
+            <Image size={32} className="text-muted-foreground" strokeWidth={1} />
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-1 pb-0.5 font-inter font-normal text-[15px] text-black w-full">
+        <div className="flex items-center justify-center gap-1 pb-0.5 font-inter font-normal text-[15px] text-foreground w-full">
           <span>By</span>
           <Link to={`/users/${authorId}`} className="relative z-20 hover:underline">
             {authorName}
@@ -61,11 +71,13 @@ export function Post({
         </div>
 
         <div className="px-1">
-          <h3 className="font-inter font-bold text-base text-black leading-normal">{title}</h3>
+          <h3 className="font-inter font-bold text-base text-foreground leading-normal transition-colors group-hover:text-primary">
+            {title}
+          </h3>
         </div>
 
         <div className="px-1">
-          <p className="font-inter font-normal text-[13px] text-black leading-normal line-clamp-3">
+          <p className="font-inter font-normal text-[13px] text-foreground/80 leading-normal line-clamp-3">
             {body}
           </p>
         </div>
@@ -76,22 +88,32 @@ export function Post({
   }
 
   return (
-    <article className={cn('relative flex flex-col gap-2.5 min-w-0', className)}>
+    <article
+      className={cn(
+        'group relative flex flex-col gap-2.5 min-w-0 rounded-2xl',
+        'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover',
+        className,
+      )}
+    >
       <div className="px-2.5">
-        <h2 className="font-inter font-bold text-xl text-black leading-normal line-clamp-2 min-h-[3.5rem]">
+        <h2 className="font-inter font-bold text-xl text-foreground leading-normal line-clamp-2 min-h-[3.5rem] transition-colors group-hover:text-primary">
           {title}
         </h2>
       </div>
 
-      <div className="aspect-[4/3] bg-[#d5d5d5] rounded-[15px] overflow-hidden w-full flex items-center justify-center shrink-0">
+      <div className="aspect-[4/3] bg-image-placeholder rounded-2xl overflow-hidden w-full flex items-center justify-center shrink-0">
         {imageUrl ? (
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
         ) : (
-          <Image size={48} className="text-gray-400" strokeWidth={1} />
+          <Image size={48} className="text-muted-foreground" strokeWidth={1} />
         )}
       </div>
 
-      <div className="flex items-center gap-1 pl-2.5 pb-1 font-inter font-normal text-xl text-black">
+      <div className="flex items-center gap-1 pl-2.5 pb-1 font-inter font-normal text-xl text-foreground">
         <span>By</span>
         <Link to={`/users/${authorId}`} className="relative z-20 hover:underline">
           {authorName}
@@ -99,7 +121,7 @@ export function Post({
       </div>
 
       <div className="px-2.5">
-        <p className="font-inter font-normal text-base text-black leading-normal line-clamp-5">
+        <p className="font-inter font-normal text-base text-foreground/80 leading-normal line-clamp-5">
           {body}
         </p>
       </div>
@@ -109,7 +131,7 @@ export function Post({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="font-inter text-xs text-black/70 border border-black/20 rounded-full px-2 py-0.5"
+              className="font-inter text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5"
             >
               #{tag}
             </span>

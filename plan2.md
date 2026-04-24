@@ -1,6 +1,6 @@
 Use `/PROJECT_MAP.md` to gain context of the project.
 
-Implement phase 8 of `/IMPLEMENTATION_PLAN.md` then, update `/PROJECT_MAP.md` to reflect the changes.
+Implement phase 9 of `/IMPLEMENTATION_PLAN.md` then, update `/PROJECT_MAP.md` to reflect the changes.
 
 /plan Create a plan to remove the skill level feature from profiles: ie. beginner, intermediate, expert; and add to profiles: a full name (display name) and a username, which both can be set from onboarding and settings.
 

@@ -29,17 +29,17 @@ export function MatchmakingFilters({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 p-4 border border-black/15 rounded-[15px]',
+        'flex flex-col gap-3 p-4 border border-border-subtle rounded-2xl bg-card',
         className,
       )}
     >
       <div className="flex items-center justify-between">
-        <h3 className="font-inter font-bold text-base text-black">Filters</h3>
+        <h3 className="font-inter font-bold text-base text-foreground">Filters</h3>
         {hasActiveFilters && (
           <button
             type="button"
             onClick={clearAll}
-            className="font-inter text-sm text-black/70 hover:text-black underline cursor-pointer"
+            className="font-inter text-sm text-muted-foreground hover:text-foreground underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 rounded-sm"
           >
             Clear all
           </button>
@@ -48,31 +48,39 @@ export function MatchmakingFilters({
 
       {availableInterests.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <span className="font-inter text-sm text-black/70">Interests</span>
-          <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-h-32 overflow-y-auto">
-            {availableInterests.map((interest) => (
-              <label
-                key={interest}
-                className="flex items-center gap-1.5 font-inter text-sm text-black cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={filters.interests.includes(interest)}
-                  onChange={() => toggleInterest(interest)}
-                />
-                {interest}
-              </label>
-            ))}
+          <span className="font-inter text-sm text-muted-foreground">Interests</span>
+          <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+            {availableInterests.map((interest) => {
+              const selected = filters.interests.includes(interest);
+              return (
+                <button
+                  key={interest}
+                  type="button"
+                  onClick={() => toggleInterest(interest)}
+                  aria-pressed={selected}
+                  className={cn(
+                    'font-inter text-xs rounded-full px-3 py-1 border transition-colors cursor-pointer',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60',
+                    selected
+                      ? 'bg-primary/15 border-primary text-primary font-medium'
+                      : 'bg-transparent border-border-subtle text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
+                >
+                  {interest}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {showNearbyToggle && (
-        <label className="flex items-center gap-1.5 font-inter text-sm text-black cursor-pointer">
+        <label className="flex items-center gap-2 font-inter text-sm text-foreground cursor-pointer select-none">
           <input
             type="checkbox"
             checked={filters.nearbyOnly}
             onChange={(e) => setFilters({ nearbyOnly: e.target.checked })}
+            className="h-4 w-4 accent-primary cursor-pointer"
           />
           Near me
         </label>

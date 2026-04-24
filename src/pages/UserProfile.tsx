@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useUserStore } from '@/store/userStore';
 
 export default function UserProfile() {
@@ -22,34 +24,45 @@ export default function UserProfile() {
 
   return (
     <div className="px-[45px] pt-[55px] pb-10 flex flex-col gap-6 max-w-4xl">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 font-inter text-sm text-black/70 hover:text-black w-fit cursor-pointer"
-      >
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="self-start">
         <ArrowLeft size={16} strokeWidth={2} />
         Back
-      </button>
+      </Button>
 
       {loading && !user ? (
-        <p className="font-inter text-base text-black">Loading...</p>
+        <>
+          <header className="flex items-center gap-5">
+            <Skeleton className="w-24 h-24 rounded-full" />
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+          </header>
+          <Skeleton className="h-5 w-32" />
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-7 w-20 rounded-full" />
+            ))}
+          </div>
+        </>
       ) : error && !user ? (
-        <p className="font-inter text-base text-black">Could not load this user.</p>
+        <p className="font-inter text-base text-foreground">Could not load this user.</p>
       ) : !user ? (
-        <p className="font-inter text-base text-black">User not found.</p>
+        <p className="font-inter text-base text-foreground">User not found.</p>
       ) : (
         <>
           <header className="flex items-center gap-5">
             <img
               src={user.avatar}
               alt={user.fullName}
-              className="w-24 h-24 rounded-full object-cover bg-[#d5d5d5] shrink-0"
+              className="w-24 h-24 rounded-full object-cover bg-image-placeholder ring-4 ring-primary/10 shrink-0"
             />
             <div className="flex flex-col gap-1">
-              <h1 className="font-raleway font-bold text-3xl text-black">{user.fullName}</h1>
-              <p className="font-inter text-sm text-black/60">@{user.username}</p>
+              <h1 className="font-raleway font-bold text-3xl text-foreground">{user.fullName}</h1>
+              <p className="font-inter text-sm text-muted-foreground">@{user.username}</p>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="flex items-center gap-1 font-inter text-sm text-black/70">
+                <span className="flex items-center gap-1 font-inter text-sm text-muted-foreground">
                   <MapPin size={14} strokeWidth={1.5} />
                   {user.location}
                 </span>
@@ -58,15 +71,15 @@ export default function UserProfile() {
           </header>
 
           <section className="flex flex-col gap-2">
-            <h2 className="font-raleway font-bold text-xl text-black">Interests</h2>
+            <h2 className="font-raleway font-bold text-xl text-foreground">Interests</h2>
             {user.interests.length === 0 ? (
-              <p className="font-inter text-sm text-black/70">No interests listed.</p>
+              <p className="font-inter text-sm text-muted-foreground">No interests listed.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {user.interests.map((interest) => (
                   <span
                     key={interest}
-                    className="font-inter text-sm text-black/80 border border-black/20 rounded-full px-3 py-1"
+                    className="font-inter text-sm text-muted-foreground bg-muted rounded-full px-3 py-1"
                   >
                     {interest}
                   </span>
@@ -76,15 +89,15 @@ export default function UserProfile() {
           </section>
 
           <section className="flex flex-col gap-2">
-            <h2 className="font-raleway font-bold text-xl text-black">Goals</h2>
+            <h2 className="font-raleway font-bold text-xl text-foreground">Goals</h2>
             {user.goals.length === 0 ? (
-              <p className="font-inter text-sm text-black/70">No goals listed.</p>
+              <p className="font-inter text-sm text-muted-foreground">No goals listed.</p>
             ) : (
               <ul className="flex flex-col gap-1.5">
                 {user.goals.map((goal) => (
                   <li
                     key={goal}
-                    className="font-inter text-base text-black/80 pl-4 border-l-2 border-[#2ECB71]"
+                    className="font-inter text-base text-foreground/80 pl-4 border-l-2 border-primary"
                   >
                     {goal}
                   </li>

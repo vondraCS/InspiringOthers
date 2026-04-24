@@ -25,27 +25,27 @@ export function ChatPanel() {
     <div
       role="dialog"
       aria-label="InspireChat"
-      className="fixed bottom-24 right-6 z-40 w-[360px] h-[520px] bg-white border border-black rounded-[15px] shadow-lg flex flex-col overflow-hidden"
+      className="fixed bottom-24 right-6 z-40 w-[360px] h-[520px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
     >
-      <div className="flex items-center gap-2 p-3 border-b border-black/10">
+      <div className="flex items-center gap-2 p-3 border-b border-border bg-muted/40">
         {active ? (
           <button
             type="button"
             aria-label="Back to conversations"
             onClick={() => setActive(null)}
-            className="p-1 rounded hover:bg-black/5 cursor-pointer"
+            className="p-1 rounded-md hover:bg-black/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
           >
             <ArrowLeft size={18} strokeWidth={1.75} />
           </button>
         ) : null}
-        <h2 className="flex-1 font-inter font-semibold text-base text-black truncate">
+        <h2 className="flex-1 font-inter font-semibold text-base text-foreground truncate">
           {active ? active.name : 'InspireChat'}
         </h2>
         <button
           type="button"
           aria-label="Close chat"
           onClick={() => setChatOpen(false)}
-          className="p-1 rounded hover:bg-black/5 cursor-pointer"
+          className="p-1 rounded-md hover:bg-black/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
         >
           <X size={18} strokeWidth={1.75} />
         </button>

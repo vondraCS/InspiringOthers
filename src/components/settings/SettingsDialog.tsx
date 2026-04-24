@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { type User } from '@/types';
 import { toast } from '@/components/ui/toast';
@@ -92,56 +93,60 @@ function SettingsForm({ user, onClose }: { user: User; onClose: () => void }) {
     onClose();
   };
 
+  const inputClass =
+    'font-inter text-sm text-foreground border border-border-subtle rounded-xl px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:border-ring';
+
   return (
     <div className="flex flex-col gap-5">
       <section className="flex flex-col gap-2">
-        <h3 className="font-inter font-semibold text-base text-black">Account</h3>
+        <h3 className="font-inter font-semibold text-base text-foreground">Account</h3>
         <div className="flex flex-col gap-3">
           <label className="flex flex-col gap-1">
-            <span className="font-inter text-sm text-black/70">Full name</span>
+            <span className="font-inter text-sm text-muted-foreground">Full name</span>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
+              className={inputClass}
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="font-inter text-sm text-black/70">Username</span>
+            <span className="font-inter text-sm text-muted-foreground">Username</span>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
+              className={inputClass}
             />
-            <span className="font-inter text-xs text-black/50">
+            <span className="font-inter text-xs text-muted-foreground">
               Lowercase letters, numbers, and underscore. 3–20 characters.
             </span>
           </label>
           <label className="flex flex-col gap-1">
-            <span className="font-inter text-sm text-black/70">Avatar URL</span>
+            <span className="font-inter text-sm text-muted-foreground">Avatar URL</span>
             <input
               type="text"
               value={avatar}
               onChange={(e) => setAvatar(e.target.value)}
-              className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
+              className={inputClass}
             />
           </label>
         </div>
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="font-inter font-semibold text-base text-black">Interests</h3>
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-h-40 overflow-y-auto border border-black/10 rounded-[10px] p-3">
+        <h3 className="font-inter font-semibold text-base text-foreground">Interests</h3>
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-h-40 overflow-y-auto border border-border-subtle rounded-xl p-3">
           {INTEREST_POOL.map((interest) => (
             <label
               key={interest}
-              className="flex items-center gap-1.5 font-inter text-sm text-black cursor-pointer"
+              className="flex items-center gap-1.5 font-inter text-sm text-foreground cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={interests.includes(interest)}
                 onChange={() => toggleInterest(interest)}
+                className="h-4 w-4 accent-primary cursor-pointer"
               />
               {interest}
             </label>
@@ -150,20 +155,12 @@ function SettingsForm({ user, onClose }: { user: User; onClose: () => void }) {
       </section>
 
       <div className="flex justify-end gap-2 pt-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="font-inter text-sm text-black border border-black/20 rounded-full px-4 py-2 hover:bg-black/5 cursor-pointer"
-        >
+        <Button variant="outline" size="lg" onClick={onClose}>
           Cancel
-        </button>
-        <button
-          type="button"
-          onClick={handleSave}
-          className="font-inter text-sm text-white bg-[#2ECB71] rounded-full px-4 py-2 hover:bg-[#2ECB71]/90 cursor-pointer"
-        >
+        </Button>
+        <Button variant="default" size="lg" onClick={handleSave}>
           Save
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -14,11 +14,11 @@ export function ConversationList() {
   const setActive = useChatStore((s) => s.setActiveConversation);
 
   if (loading && conversations.length === 0) {
-    return <p className="p-4 font-inter text-sm text-black">Loading...</p>;
+    return <p className="p-4 font-inter text-sm text-muted-foreground">Loading...</p>;
   }
 
   if (conversations.length === 0) {
-    return <p className="p-4 font-inter text-sm text-black">No conversations yet.</p>;
+    return <p className="p-4 font-inter text-sm text-muted-foreground">No conversations yet.</p>;
   }
 
   return (
@@ -30,11 +30,11 @@ export function ConversationList() {
             <button
               type="button"
               onClick={() => setActive(c.id)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-black/5 cursor-pointer border-b border-black/5"
+              className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted cursor-pointer border-b border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/60"
             >
-              <Icon size={18} strokeWidth={1.75} className="shrink-0" />
-              <span className="flex-1 font-inter text-sm text-black truncate">{c.name}</span>
-              <span className="font-inter text-[10px] uppercase tracking-wide text-black/60">
+              <Icon size={18} strokeWidth={1.75} className="shrink-0 text-muted-foreground" />
+              <span className="flex-1 font-inter text-sm text-foreground truncate">{c.name}</span>
+              <span className="font-inter text-[10px] uppercase tracking-wide text-muted-foreground">
                 {c.type}
               </span>
             </button>

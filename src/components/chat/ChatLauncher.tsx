@@ -11,10 +11,10 @@ export function ChatLauncher() {
       onClick={toggleChat}
       aria-label={chatOpen ? 'Close chat' : 'Open chat'}
       aria-pressed={chatOpen}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full border border-black bg-white text-black shadow hover:bg-black/5 cursor-pointer"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground shadow-card-hover hover:bg-primary/90 cursor-pointer transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
     >
       <MessageSquare size={20} strokeWidth={2} />
-      <span className="font-inter text-sm">Chat</span>
+      <span className="font-inter font-medium text-sm">Chat</span>
     </button>
   );
 }

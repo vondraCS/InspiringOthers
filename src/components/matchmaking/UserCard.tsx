@@ -25,7 +25,8 @@ export function UserCard({
   return (
     <article
       className={cn(
-        'flex flex-col items-center gap-2 w-[200px] shrink-0 p-3 border border-black/15 rounded-[15px]',
+        'flex flex-col items-center gap-2 w-[200px] shrink-0 p-3 border border-border-subtle rounded-2xl bg-card',
+        'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card',
         className,
       )}
     >
@@ -33,17 +34,17 @@ export function UserCard({
         <img
           src={avatar}
           alt={fullName}
-          className="w-20 h-20 rounded-full object-cover bg-[#d5d5d5]"
+          className="w-20 h-20 rounded-full object-cover bg-image-placeholder ring-1 ring-border-subtle"
         />
       </Link>
 
       <Link to={profileHref} className="hover:underline text-center">
-        <h3 className="font-inter font-bold text-base text-black leading-tight">{fullName}</h3>
+        <h3 className="font-inter font-bold text-base text-foreground leading-tight">{fullName}</h3>
       </Link>
 
-      <span className="font-inter text-xs text-black/60 leading-tight">@{username}</span>
+      <span className="font-inter text-xs text-muted-foreground leading-tight">@{username}</span>
 
-      <div className="flex items-center gap-1 text-black/70">
+      <div className="flex items-center gap-1 text-muted-foreground">
         <MapPin size={12} strokeWidth={1.5} />
         <span className="font-inter text-[12px] leading-tight text-center line-clamp-1">
           {location}
@@ -55,7 +56,7 @@ export function UserCard({
           {interests.slice(0, 3).map((interest) => (
             <span
               key={interest}
-              className="font-inter text-[11px] text-black/70 border border-black/15 rounded-full px-1.5 py-0.5"
+              className="font-inter text-[11px] text-muted-foreground bg-muted rounded-full px-2 py-0.5"
             >
               {interest}
             </span>
