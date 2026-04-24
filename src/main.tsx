@@ -4,11 +4,17 @@ import './index.css';
 import App from './App.tsx';
 
 async function bootstrap() {
-  const { worker } = await import('./mocks/browser');
-  await worker.start({
-    onUnhandledRequest: 'bypass',
-    serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
-  });
+  try {
+    const { worker } = await import('./mocks/browser');
+    await worker.start({
+      onUnhandledRequest: 'bypass',
+      serviceWorker: {
+        url: `${import.meta.env.BASE_URL}mockServiceWorker.js`,
+      },
+    });
+  } catch (err) {
+    console.error('[MSW] Service worker failed to start:', err);
+  }
 
   if (import.meta.env.DEV) {
     const api = await import('./lib/api/users');
@@ -22,4 +28,4 @@ async function bootstrap() {
   );
 }
 
-bootstrap();
+bootstrap().catch(console.error);
