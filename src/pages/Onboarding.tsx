@@ -42,7 +42,7 @@ const profileSchema = z.object({
 
 const interestsSchema = z.object({
   interests: z.array(z.string()).min(1, 'Pick at least one interest'),
-  location: z.string().optional(),
+  location: z.string().trim().min(1, 'Location is required'),
 });
 
 type ProfileValues = z.infer<typeof profileSchema>;
@@ -95,7 +95,7 @@ export default function Onboarding() {
                 fullName: profile.fullName,
                 username: profile.username,
                 interests: values.interests,
-                location: values.location?.trim() || currentUser?.location || '',
+                location: values.location.trim(),
               });
               localStorage.setItem(ONBOARDED_KEY, '1');
               toast.success({ title: `Welcome, ${profile.fullName.split(' ')[0]}!` });
@@ -235,7 +235,7 @@ function InterestsStep({
       <section className="flex flex-col gap-2">
         <label className="flex flex-col gap-1">
           <span className="font-inter font-semibold text-base text-black">
-            Location <span className="font-normal text-black/50">(optional)</span>
+            Location
           </span>
           <input
             type="text"
@@ -244,6 +244,9 @@ function InterestsStep({
             className="font-inter text-sm text-black border border-black/20 rounded-[10px] px-3 py-2 outline-none focus:border-black/40"
           />
         </label>
+        {errors.location && (
+          <p className="font-inter text-xs text-red-600">{errors.location.message}</p>
+        )}
       </section>
 
       <div className="flex justify-between pt-2">
