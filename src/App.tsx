@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import Home from '@/pages/Home';
 import ForYou from '@/pages/ForYou';
@@ -25,7 +25,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/onboarding" element={<Onboarding />} />
             <Route
@@ -47,7 +47,7 @@ export default function App() {
               }
             />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </ToastProvider>
     </ErrorBoundary>
   );
